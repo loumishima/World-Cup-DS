@@ -1,0 +1,131 @@
+---
+title: "World Cups"
+author: "Luiz Henrique Rodrigues"
+date: "14 de abril de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r libraries echo=FALSE, warning=FALSE, message=FALSE}
+
+library("stringr")
+library("tidyverse")
+library("data.table")
+library("ggplot2")
+
+setwd('C:\\Users\\LuizH\\Documents\\TCC\\Web Scrapping')
+
+```
+
+
+```{r raw data}
+
+cups <- read.csv2('cup-igoals.csv', sep = ',')
+
+#Position not set, replacing for 'FW'
+#error <- cups %>% filter(role == 'fifa.fieldPos_0') 
+cups$role <- as.character(cups$role)
+cups <- cups %>% mutate(role = ifelse(role == 'fifa.fieldPos_0', 'FW', role))
+cups$role <- factor(cups$role)
+
+
+str(cups)
+summary(cups)
+
+
+```
+
+```{r players}
+
+players <- cups %>%
+  group_by(name) %>%
+  summarise_at(vars(c('goals','pens','assist','minutes','matches', 'rank')), funs(sum, mean)  ) %>%
+  mutate(goals_match = goals_sum/matches_sum) %>% 
+  mutate(rank_mean = round(rank_mean)) %>% 
+  mutate_if(is.double, round, digits = 2) %>% 
+  arrange(desc(goals_sum), desc(assist_sum)) %>%
+  select(-rank_mean, rank_mean) %>% 
+  ungroup()
+
+```
+
+```{r Goals-match}
+not_fw = players[players$role != 'FW',]
+
+gg <- ggplot(data = players, aes(y = goals_sum, x = matches_sum )) +
+  geom_point(aes( size = minutes_sum), alpha = 0.3) +
+  geom_smooth(method="loess", se=F) +
+  theme_bw() +
+  labs(subtitle = 'All time Goals per Matches',
+       title = 'FIFA WORLD CUP',
+       x = 'Matches',
+       y = 'Goals',
+       caption = 'Source: FIFA.com',
+       color = 'Role',
+       size = 'Minutes Played')
+
+gg2 <- ggplot(data = players, aes(y = goals_sum, x = matches_sum )) +
+  geom_point(aes( size = goals_match), alpha = 0.5) +
+  geom_smooth(method="loess", se=F) +
+  theme_bw() +
+  labs(subtitle = 'All time Goals per Matches',
+       title = 'FIFA WORLD CUP',
+       x = 'Matches',
+       y = 'Goals',
+       caption = 'Source: FIFA.com',
+       color = 'Role',
+       size = 'Goals per Match')
+
+plot(gg2)
+
+```
+```{r Goals-Position}
+
+out <- players %>% split(players$role)
+
+ggFW <-  ggplot(data = out$FW, aes(y = goals_sum, x = matches_sum )) +
+  geom_point(aes(colour = goals_match, size = minutes_sum), alpha = 0.3) +
+  geom_smooth(method="loess", se=F) +
+  theme_bw() +
+  labs(subtitle = 'All time Goals vs Matches',
+       title = 'FIFA WORLD CUP',
+       x = 'Matches',
+       y = 'Goals',
+       caption = 'Source: FIFA.com',
+       color = 'Goals per Match',
+       size = 'Minutes Played')
+
+ggMF <-  ggplot(data = out$MF, aes(y = goals_sum, x = matches_sum )) +
+  geom_point(aes(colour = goals_match, size = minutes_sum), alpha = 0.3) +
+  geom_smooth(method="loess", se=F) +
+  theme_bw() +
+  labs(subtitle = 'All time Goals vs Matches',
+       title = 'FIFA WORLD CUP',
+       x = 'Matches',
+       y = 'Goals',
+       caption = 'Source: FIFA.com',
+       color = 'Goals per Match',
+       size = 'Minutes Played')
+
+ggDF <-  ggplot(data = out$DF, aes(y = goals_sum, x = matches_sum )) +
+  geom_point(aes(colour = goals_match, size = minutes_sum), alpha = 0.3) +
+  geom_smooth(method="loess", se=F) +
+  theme_bw() +
+  labs(subtitle = 'All time Goals vs Matches',
+       title = 'FIFA WORLD CUP',
+       x = 'Matches',
+       y = 'Goals',
+       caption = 'Source: FIFA.com',
+       color = 'Goals per Match',
+       size = 'Minutes Played')
+
+plot(ggFW)
+plot(ggMF)
+plot(ggDF)
+```
+
