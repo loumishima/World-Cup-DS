@@ -19,7 +19,7 @@ Beyond that, there are still two subcategories:
 ### 2014 FIFA World Cup Brazil™
 
 Ironically the most recent database was the one that revealed the most problems to integrate with the others statistics from the other cups
-and here is why: ~~Why Brazil always getting me upset? ~~
+and here is why: ~~Why Brazil always getting me upset?~~
 
 - Indexes/number ranking suddenly have dissapeared
 - Position on the field wasw also removed (Role on the previous cups: Goalkeeper, Defender, MidFielder, Forward)
